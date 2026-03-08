@@ -1,9 +1,14 @@
+# syntax=docker/dockerfile:1.7
 FROM node:20-alpine AS build
 
 WORKDIR /app
+ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_PROGRESS=false
 
 COPY package*.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --fund=false --progress=false
 
 COPY . .
 RUN npm run build
