@@ -32,6 +32,7 @@ type SalesChannelRecord = {
 
 export type SiteBuilderManifest = {
   version: number;
+  privilege: "full-admin";
   site: {
     name: string;
     slug: string;
@@ -44,6 +45,11 @@ export type SiteBuilderManifest = {
       title: string;
       prompt?: string;
     }>;
+  };
+  admin_api: {
+    base_url: string | null;
+    site_builder_route: string | null;
+    authentication: "Authorization: Basic <secret-api-key>";
   };
   sales_channel: {
     id: string;
@@ -325,6 +331,7 @@ export async function buildSiteManifest(
 
   return {
     version: 1,
+    privilege: "full-admin",
     site: {
       name: input.site.name,
       slug: siteSlug,
@@ -333,6 +340,13 @@ export async function buildSiteManifest(
       design_brief: input.site.design_brief ?? null,
       theme: input.site.theme ?? {},
       pages: input.site.pages ?? [],
+    },
+    admin_api: {
+      base_url: backendUrl,
+      site_builder_route: backendUrl
+        ? `${backendUrl}/admin/site-builder`
+        : null,
+      authentication: "Authorization: Basic <secret-api-key>",
     },
     sales_channel: {
       id: salesChannel.id,
