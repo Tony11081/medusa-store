@@ -43,10 +43,10 @@ run_step() {
 
 trap cleanup EXIT INT TERM
 
-run_step "Running Medusa database setup" npx medusa db:setup --no-interactive --execute-all-links
+run_step "Running Medusa database setup" ./node_modules/.bin/medusa db:setup --no-interactive --execute-all-links
 
 printf '\n==> Starting Medusa\n' >>"$LOG_FILE"
-npm run start >>"$LOG_FILE" 2>&1 &
+./node_modules/.bin/medusa start >>"$LOG_FILE" 2>&1 &
 child_pid=$!
 
 wait "$child_pid"
