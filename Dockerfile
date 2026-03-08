@@ -1,21 +1,25 @@
-FROM node:18-alpine
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# 复制 package 文件
 COPY package*.json ./
+RUN npm ci
 
-# 安装依赖
-RUN npm install --production
-
-# 复制源代码
 COPY . .
-
-# 构建
 RUN npm run build
 
-# 暴露端口
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/.medusa ./.medusa
+COPY --from=build /app/medusa-config.ts ./medusa-config.ts
+
 EXPOSE 9000
 
-# 启动命令
 CMD ["npm", "run", "start"]
