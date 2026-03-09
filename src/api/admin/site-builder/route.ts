@@ -5,6 +5,7 @@ import {
   siteBuilderExampleInput,
   siteControlPlanePatchExampleInput,
   siteDeployExampleInput,
+  siteLaunchExampleInput,
 } from "../../../lib/site-builder-schema";
 
 export async function GET(
@@ -44,6 +45,9 @@ export async function GET(
       site_deploy_route_template: baseUrl
         ? `${baseUrl}/admin/site-builder/sites/:siteRef/deploy`
         : null,
+      site_launch_route_template: baseUrl
+        ? `${baseUrl}/admin/site-builder/sites/:siteRef/launch`
+        : null,
       capabilities: [
         "create-or-reuse sales channels",
         "create publishable API keys",
@@ -54,6 +58,7 @@ export async function GET(
         "retrieve a managed site by slug, domain, or sales channel id",
         "update domain, deployment, payments, and operations state",
         "trigger Dokploy storefront deployments",
+        "run single launch orchestration",
         "return frontend env manifest and launch readiness",
       ],
     },
@@ -66,6 +71,7 @@ export async function GET(
     example_input: siteBuilderExampleInput,
     patch_example_input: siteControlPlanePatchExampleInput,
     deploy_example_input: siteDeployExampleInput,
+    launch_example_input: siteLaunchExampleInput,
   });
 }
 

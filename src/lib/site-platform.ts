@@ -26,6 +26,7 @@ export type SitePlatformCapabilities = {
       site_control_plane: CapabilityState;
       theme_generation: CapabilityState;
       storefront_deploy_automation: CapabilityState;
+      launch_workflow: CapabilityState;
       domain_automation: CapabilityState;
       payment_activation: CapabilityState;
       operations_automation: CapabilityState;
@@ -46,6 +47,10 @@ export type SitePlatformCapabilities = {
       notes: string;
     };
     storefront_deploy_automation: {
+      status: CapabilityState;
+      notes: string;
+    };
+    launch_workflow: {
       status: CapabilityState;
       notes: string;
     };
@@ -116,6 +121,7 @@ export async function getSitePlatformCapabilities(
           storefront_deploy_automation: dokployConfigured
             ? "partial"
             : "missing",
+          launch_workflow: "partial",
           domain_automation: "missing",
           payment_activation: stripeConfigured ? "partial" : "missing",
           operations_automation: "partial",
@@ -140,6 +146,10 @@ export async function getSitePlatformCapabilities(
         notes: dokployConfigured
           ? "The backend can now trigger Dokploy application creation and deployment, but template-level storefront provisioning is not fully automated yet."
           : "The backend tracks deployment state, but it does not yet create or publish storefront deployments automatically.",
+      },
+      launch_workflow: {
+        status: "partial",
+        notes: "A single launch route now exists to combine site state updates with optional deployment triggering, but it does not yet automate domains and payments end to end.",
       },
       domain_automation: {
         status: "missing",
@@ -170,10 +180,10 @@ export async function getSitePlatformCapabilities(
         ? "Add storefront template selection and deployment callbacks on top of Dokploy deployment."
         : "Set Dokploy env vars on the backend so AI can trigger storefront deployments directly.",
       "Add installable provider model for analytics, CRM, email, and ads.",
-      "Expose a single launch workflow that executes deploy, domain, payments, and publish in one call.",
+      "Upgrade the launch workflow from orchestration-only to full deploy, domain, payments, and publish automation.",
     ],
     next_targets: [
-      "Build a launch executor that turns a ready site manifest into a deployed storefront.",
+      "Evolve the launch executor from control-plane orchestration into a full publish pipeline.",
       "Add provider adapters for domain, deployment, and payment activation.",
       "Add post-launch operational jobs for SEO, analytics, email, and campaign optimization.",
     ],

@@ -326,6 +326,13 @@ export const siteControlPlanePatchSchema = z
   })
   .strict();
 
+export const siteLaunchInputSchema = z
+  .object({
+    patch: siteControlPlanePatchSchema.optional(),
+    deploy: siteDeployInputSchema.optional(),
+  })
+  .strict();
+
 export type SiteBuilderInput = z.infer<typeof siteBuilderInputSchema>;
 export type SiteBuilderCategoryInput = z.infer<typeof categorySchema>;
 export type SiteBuilderProductInput = z.infer<typeof productSchema>;
@@ -335,6 +342,7 @@ export type SiteControlPlanePatchInput = z.infer<
   typeof siteControlPlanePatchSchema
 >;
 export type SiteDeployInput = z.infer<typeof siteDeployInputSchema>;
+export type SiteLaunchInput = z.infer<typeof siteLaunchInputSchema>;
 
 export const siteBuilderExampleInput: SiteBuilderInput = {
   site: {
@@ -479,4 +487,23 @@ export const siteDeployExampleInput: SiteDeployInput = {
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "pk_xxx",
     },
   },
+};
+
+export const siteLaunchExampleInput: SiteLaunchInput = {
+  patch: {
+    platform: {
+      domain: {
+        hostname: "shop.acmeoutdoors.com",
+        dns_status: "pending",
+        ssl_status: "pending",
+      },
+      operations: {
+        analytics: {
+          status: "configuring",
+          provider: "google-analytics",
+        },
+      },
+    },
+  },
+  deploy: siteDeployExampleInput,
 };
