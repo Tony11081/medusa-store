@@ -272,6 +272,33 @@ export const siteBuilderInputSchema = z
   })
   .strict();
 
+export const siteDeployInputSchema = z
+  .object({
+    provider: z.literal("dokploy").default("dokploy"),
+    target: z
+      .object({
+        base_url: z.string().url().optional(),
+        api_key: z.string().trim().min(1).optional(),
+        project_id: z.string().trim().min(1).optional(),
+        environment_id: z.string().trim().min(1).optional(),
+        application_id: z.string().trim().min(1).optional(),
+        name: z.string().trim().min(1).optional(),
+        app_name: z.string().trim().min(1).optional(),
+        description: z.string().trim().min(1).optional(),
+        owner: z.string().trim().min(1),
+        repository: z.string().trim().min(1),
+        branch: z.string().trim().min(1).default("main"),
+        build_type: z.enum(["dockerfile", "nixpacks"]).default("dockerfile"),
+        dockerfile: z.string().trim().min(1).optional(),
+        preview_port: z.number().int().positive().default(3000),
+        env: z.record(z.string()).default({}),
+        url: z.string().url().optional(),
+        auto_deploy: z.boolean().default(true),
+      })
+      .strict(),
+  })
+  .strict();
+
 export const siteControlPlanePatchSchema = z
   .object({
     site: z
@@ -307,6 +334,7 @@ export type SitePlatformInput = z.infer<typeof sitePlatformSchema>;
 export type SiteControlPlanePatchInput = z.infer<
   typeof siteControlPlanePatchSchema
 >;
+export type SiteDeployInput = z.infer<typeof siteDeployInputSchema>;
 
 export const siteBuilderExampleInput: SiteBuilderInput = {
   site: {
@@ -431,6 +459,24 @@ export const siteControlPlanePatchExampleInput: SiteControlPlanePatchInput = {
     payments: {
       status: "ready",
       webhook_status: "ready",
+    },
+  },
+};
+
+export const siteDeployExampleInput: SiteDeployInput = {
+  provider: "dokploy",
+  target: {
+    owner: "Tony11081",
+    repository: "medusa-storefront",
+    branch: "main",
+    build_type: "dockerfile",
+    dockerfile: "Dockerfile",
+    preview_port: 3000,
+    auto_deploy: true,
+    env: {
+      MEDUSA_BACKEND_URL:
+        "http://medusa-store-ga7di9-4e3642-23-94-38-181.traefik.me",
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "pk_xxx",
     },
   },
 };

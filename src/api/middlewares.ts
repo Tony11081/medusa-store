@@ -2,6 +2,7 @@ import { defineMiddlewares, validateAndTransformBody } from "@medusajs/framework
 import {
   siteBuilderInputSchema,
   siteControlPlanePatchSchema,
+  siteDeployInputSchema,
 } from "../lib/site-builder-schema";
 
 export default defineMiddlewares({
@@ -15,6 +16,11 @@ export default defineMiddlewares({
       matcher: "/admin/site-builder/sites/:siteRef",
       methods: ["POST"],
       middlewares: [validateAndTransformBody(siteControlPlanePatchSchema)],
+    },
+    {
+      matcher: "/admin/site-builder/sites/:siteRef/deploy",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(siteDeployInputSchema)],
     },
   ],
 });
