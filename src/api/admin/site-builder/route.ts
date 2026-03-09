@@ -1,6 +1,10 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { buildSiteManifest } from "../../../lib/site-builder";
-import { SiteBuilderInput, siteBuilderExampleInput } from "../../../lib/site-builder-schema";
+import {
+  SiteBuilderInput,
+  siteBuilderExampleInput,
+  siteControlPlanePatchExampleInput,
+} from "../../../lib/site-builder-schema";
 
 export async function GET(
   req: AuthenticatedMedusaRequest,
@@ -11,7 +15,7 @@ export async function GET(
   const baseUrl = host ? `${protocol}://${host}` : null;
 
   res.status(200).json({
-    version: 1,
+    version: 2,
     privilege: "full-admin",
     route: "/admin/site-builder",
     authentication: {
@@ -23,16 +27,26 @@ export async function GET(
       ],
     },
     description:
-      "High-privilege orchestration endpoint for site catalog setup. It creates or reuses channels, keys, categories, and products, then returns the site manifest.",
+      "High-privilege orchestration endpoint for AI-driven store creation and control-plane updates. It creates or reuses channels, keys, categories, and products, then returns the persisted site manifest.",
     admin_api: {
       base_url: baseUrl,
       site_builder_route: baseUrl ? `${baseUrl}/admin/site-builder` : null,
+      site_list_route: baseUrl
+        ? `${baseUrl}/admin/site-builder/sites`
+        : null,
+      site_detail_route_template: baseUrl
+        ? `${baseUrl}/admin/site-builder/sites/:siteRef`
+        : null,
       capabilities: [
         "create-or-reuse sales channels",
         "create publishable API keys",
         "create-or-reuse product categories",
         "create-or-reuse products",
-        "return frontend env manifest",
+        "persist site control-plane metadata",
+        "list managed sites",
+        "retrieve a managed site by slug, domain, or sales channel id",
+        "update domain, deployment, payments, and operations state",
+        "return frontend env manifest and launch readiness",
       ],
     },
     cli: {
@@ -42,6 +56,7 @@ export async function GET(
         "npm run site:build -- /path/to/site-config.json",
     },
     example_input: siteBuilderExampleInput,
+    patch_example_input: siteControlPlanePatchExampleInput,
   });
 }
 

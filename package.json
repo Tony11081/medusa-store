@@ -17,6 +17,7 @@
     "seed": "medusa exec ./src/scripts/seed.ts",
     "site:build": "medusa exec ./src/scripts/site-builder.ts",
     "api-key:create": "medusa exec ./src/scripts/create-api-key.ts",
+    "stripe:enable": "medusa exec ./src/scripts/enable-stripe.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
@@ -27,7 +28,8 @@
     "@medusajs/admin-sdk": "2.13.1",
     "@medusajs/cli": "2.13.1",
     "@medusajs/framework": "2.13.1",
-    "@medusajs/medusa": "2.13.1"
+    "@medusajs/medusa": "2.13.1",
+    "@medusajs/payment-stripe": "^2.13.1"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.1",

@@ -107,6 +107,121 @@ const sitePageSchema = z
   })
   .strict();
 
+const domainStatusSchema = z.enum([
+  "unconfigured",
+  "pending",
+  "verified",
+  "failed",
+]);
+
+const sslStatusSchema = z.enum([
+  "unconfigured",
+  "pending",
+  "issued",
+  "failed",
+]);
+
+const deploymentStatusSchema = z.enum([
+  "not_started",
+  "queued",
+  "building",
+  "ready",
+  "failed",
+]);
+
+const paymentStatusSchema = z.enum([
+  "not_configured",
+  "configuring",
+  "ready",
+  "failed",
+]);
+
+const webhookStatusSchema = z.enum([
+  "not_configured",
+  "pending",
+  "ready",
+  "failed",
+]);
+
+const integrationStatusSchema = z.enum([
+  "not_configured",
+  "configuring",
+  "ready",
+  "failed",
+]);
+
+const sitePlatformIntegrationSchema = z
+  .object({
+    status: integrationStatusSchema.optional(),
+    provider: z.string().trim().min(1).optional(),
+    external_id: z.string().trim().min(1).optional(),
+    notes: z.string().trim().min(1).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+const sitePlatformDomainSchema = z
+  .object({
+    hostname: z.string().trim().min(1).optional(),
+    provider: z.string().trim().min(1).optional(),
+    dns_status: domainStatusSchema.optional(),
+    ssl_status: sslStatusSchema.optional(),
+    connected_at: z.string().datetime().optional(),
+    notes: z.string().trim().min(1).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+const sitePlatformDeploymentSchema = z
+  .object({
+    provider: z.string().trim().min(1).optional(),
+    project_id: z.string().trim().min(1).optional(),
+    environment: z.string().trim().min(1).optional(),
+    status: deploymentStatusSchema.optional(),
+    url: z.string().url().optional(),
+    preview_url: z.string().url().optional(),
+    last_deployed_at: z.string().datetime().optional(),
+    notes: z.string().trim().min(1).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+const sitePlatformPaymentsSchema = z
+  .object({
+    provider: z.string().trim().min(1).optional(),
+    mode: z.enum(["test", "live"]).optional(),
+    status: paymentStatusSchema.optional(),
+    account_id: z.string().trim().min(1).optional(),
+    publishable_key: z.string().trim().min(1).optional(),
+    webhook_url: z.string().url().optional(),
+    webhook_status: webhookStatusSchema.optional(),
+    notes: z.string().trim().min(1).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+const sitePlatformOperationsSchema = z
+  .object({
+    seo: sitePlatformIntegrationSchema.optional(),
+    analytics: sitePlatformIntegrationSchema.optional(),
+    email_marketing: sitePlatformIntegrationSchema.optional(),
+    ads: sitePlatformIntegrationSchema.optional(),
+    crm: sitePlatformIntegrationSchema.optional(),
+    automation: sitePlatformIntegrationSchema.optional(),
+    notes: z.string().trim().min(1).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict();
+
+export const sitePlatformSchema = z
+  .object({
+    domain: sitePlatformDomainSchema.optional(),
+    deployment: sitePlatformDeploymentSchema.optional(),
+    payments: sitePlatformPaymentsSchema.optional(),
+    operations: sitePlatformOperationsSchema.optional(),
+  })
+  .strict();
+
 const siteSchema = z
   .object({
     name: z.string().trim().min(1),
@@ -151,8 +266,36 @@ export const siteBuilderInputSchema = z
     site: siteSchema,
     categories: z.array(categorySchema).default([]),
     products: z.array(productSchema).default([]),
+    platform: sitePlatformSchema.default({}),
     defaults: defaultsSchema,
     options: optionsSchema,
+  })
+  .strict();
+
+export const siteControlPlanePatchSchema = z
+  .object({
+    site: z
+      .object({
+        name: z.string().trim().min(1).optional(),
+        domain: z.string().trim().min(1).nullable().optional(),
+        description: z.string().trim().min(1).nullable().optional(),
+        backend_url: z.string().url().nullable().optional(),
+        design_brief: z.string().trim().min(1).nullable().optional(),
+        theme: z.record(z.unknown()).optional(),
+        pages: z.array(sitePageSchema).optional(),
+        metadata: z.record(z.unknown()).optional(),
+      })
+      .strict()
+      .optional(),
+    platform: z
+      .object({
+        domain: sitePlatformDomainSchema.partial().optional(),
+        deployment: sitePlatformDeploymentSchema.partial().optional(),
+        payments: sitePlatformPaymentsSchema.partial().optional(),
+        operations: sitePlatformOperationsSchema.partial().optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 
@@ -160,6 +303,10 @@ export type SiteBuilderInput = z.infer<typeof siteBuilderInputSchema>;
 export type SiteBuilderCategoryInput = z.infer<typeof categorySchema>;
 export type SiteBuilderProductInput = z.infer<typeof productSchema>;
 export type SiteBuilderProductVariantInput = z.infer<typeof productVariantSchema>;
+export type SitePlatformInput = z.infer<typeof sitePlatformSchema>;
+export type SiteControlPlanePatchInput = z.infer<
+  typeof siteControlPlanePatchSchema
+>;
 
 export const siteBuilderExampleInput: SiteBuilderInput = {
   site: {
@@ -187,6 +334,33 @@ export const siteBuilderExampleInput: SiteBuilderInput = {
           "Create a premium PDP with sticky purchase card, gallery, specs, shipping, and recommendation blocks.",
       },
     ],
+  },
+  platform: {
+    domain: {
+      hostname: "shop.acmeoutdoors.com",
+      provider: "cloudflare",
+      dns_status: "pending",
+      ssl_status: "unconfigured",
+    },
+    deployment: {
+      provider: "dokploy",
+      environment: "production",
+      status: "queued",
+    },
+    payments: {
+      provider: "stripe",
+      mode: "test",
+      status: "configuring",
+      webhook_status: "pending",
+    },
+    operations: {
+      analytics: {
+        status: "not_configured",
+      },
+      seo: {
+        status: "configuring",
+      },
+    },
   },
   categories: ["Backpacks", "Camp Kitchen", "Trail Accessories"],
   products: [
@@ -239,5 +413,24 @@ export const siteBuilderExampleInput: SiteBuilderInput = {
     reuse_sales_channel: true,
     skip_existing_products: true,
     create_publishable_key: true,
+  },
+};
+
+export const siteControlPlanePatchExampleInput: SiteControlPlanePatchInput = {
+  platform: {
+    domain: {
+      dns_status: "verified",
+      ssl_status: "issued",
+      connected_at: "2026-03-09T12:00:00.000Z",
+    },
+    deployment: {
+      status: "ready",
+      url: "https://shop.acmeoutdoors.com",
+      last_deployed_at: "2026-03-09T12:05:00.000Z",
+    },
+    payments: {
+      status: "ready",
+      webhook_status: "ready",
+    },
   },
 };
