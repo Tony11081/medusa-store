@@ -6,6 +6,7 @@ import {
 } from "@medusajs/framework/utils";
 import {
   createApiKeysWorkflow,
+  createInventoryLevelsWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
   createSalesChannelsWorkflow,
@@ -334,7 +335,7 @@ export async function buildSiteManifest(
     throw new Error("Failed to resolve sales channel.");
   }
 
-  await ensureSalesChannelStockLocationLink(
+  const stockLocationId = await ensureSalesChannelStockLocationLink(
     container,
     query,
     salesChannel.id
@@ -466,6 +467,15 @@ export async function buildSiteManifest(
       status: createdProduct.status,
       action: "created",
     });
+
+    if (stockLocationId) {
+      await ensureInventoryLevelsForProduct(
+        container,
+        query,
+        createdProduct.id,
+        stockLocationId
+      );
+    }
   }
 
   const now = new Date().toISOString();
@@ -1566,7 +1576,7 @@ async function ensureSalesChannelStockLocationLink(
     }) => Promise<{ data: Array<Record<string, unknown>> }>;
   },
   salesChannelId: string
-): Promise<void> {
+): Promise<string | null> {
   const { data: stores } = await query.graph({
     entity: "store",
     fields: ["default_location_id"],
@@ -1575,7 +1585,7 @@ async function ensureSalesChannelStockLocationLink(
     (stores[0]?.default_location_id as string | undefined | null) ?? null;
 
   if (!stockLocationId) {
-    return;
+    return null;
   }
 
   const { data: existingLinks } = await query.graph({
@@ -1588,13 +1598,97 @@ async function ensureSalesChannelStockLocationLink(
   });
 
   if (existingLinks.length) {
-    return;
+    return stockLocationId;
   }
 
   await linkSalesChannelsToStockLocationWorkflow(container).run({
     input: {
       id: stockLocationId,
       add: [salesChannelId],
+    },
+  });
+
+  return stockLocationId;
+}
+
+async function ensureInventoryLevelsForProduct(
+  container: MedusaContainer,
+  query: {
+    graph: (input: {
+      entity: string;
+      fields: string[];
+      filters?: Record<string, unknown>;
+    }) => Promise<{ data: Array<Record<string, unknown>> }>;
+  },
+  productId: string,
+  stockLocationId: string
+): Promise<void> {
+  const { data: products } = await query.graph({
+    entity: "product",
+    fields: ["variants.id"],
+    filters: {
+      id: productId,
+    },
+  });
+
+  const variantIds = uniqueStrings(
+    ((products[0]?.variants as Array<{ id?: string }> | undefined) ?? [])
+      .map((variant) => asString(variant.id))
+      .filter((value): value is string => Boolean(value))
+  );
+
+  if (!variantIds.length) {
+    return;
+  }
+
+  const { data: variantInventoryItems } = await query.graph({
+    entity: "product_variant_inventory_items",
+    fields: ["inventory_item_id", "variant_id"],
+    filters: {
+      variant_id: variantIds,
+    },
+  });
+
+  const inventoryItemIds = uniqueStrings(
+    variantInventoryItems
+      .map((entry) => asString(entry.inventory_item_id))
+      .filter((value): value is string => Boolean(value))
+  );
+
+  if (!inventoryItemIds.length) {
+    return;
+  }
+
+  const { data: existingLevels } = await query.graph({
+    entity: "inventory_level",
+    fields: ["inventory_item_id"],
+    filters: {
+      inventory_item_id: inventoryItemIds,
+      location_id: stockLocationId,
+    },
+  });
+
+  const existingInventoryItemIds = new Set(
+    existingLevels
+      .map((entry) => asString(entry.inventory_item_id))
+      .filter((value): value is string => Boolean(value))
+  );
+
+  const missingInventoryLevels = inventoryItemIds
+    .filter((inventoryItemId) => !existingInventoryItemIds.has(inventoryItemId))
+    .map((inventoryItemId) => ({
+      inventory_item_id: inventoryItemId,
+      location_id: stockLocationId,
+      stocked_quantity: 1000,
+    }));
+
+  if (!missingInventoryLevels.length) {
+    return;
+  }
+
+  await createInventoryLevelsWorkflow(container).run({
+    input: {
+      inventory_levels: missingInventoryLevels,
     },
   });
 }
