@@ -283,9 +283,6 @@ export async function buildSiteManifest(
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
   const fulfillmentModuleService = container.resolve(Modules.FULFILLMENT);
-  const storeModuleService = container.resolve(Modules.STORE) as {
-    listStores: () => Promise<Array<{ default_location_id?: string | null }>>;
-  };
   const salesChannelModuleService = container.resolve(
     Modules.SALES_CHANNEL
   ) as SalesChannelModuleService;
@@ -340,7 +337,6 @@ export async function buildSiteManifest(
   await ensureSalesChannelStockLocationLink(
     container,
     query,
-    storeModuleService,
     salesChannel.id
   );
 
@@ -1569,13 +1565,14 @@ async function ensureSalesChannelStockLocationLink(
       filters?: Record<string, unknown>;
     }) => Promise<{ data: Array<Record<string, unknown>> }>;
   },
-  storeModuleService: {
-    listStores: () => Promise<Array<{ default_location_id?: string | null }>>;
-  },
   salesChannelId: string
 ): Promise<void> {
-  const [store] = await storeModuleService.listStores();
-  const stockLocationId = store?.default_location_id ?? null;
+  const { data: stores } = await query.graph({
+    entity: "store",
+    fields: ["default_location_id"],
+  });
+  const stockLocationId =
+    (stores[0]?.default_location_id as string | undefined | null) ?? null;
 
   if (!stockLocationId) {
     return;
