@@ -410,6 +410,15 @@ export async function buildSiteManifest(
       : null;
 
     if (existingProduct) {
+      if (stockLocationId) {
+        await ensureInventoryLevelsForProduct(
+          container,
+          query,
+          existingProduct.id,
+          stockLocationId
+        );
+      }
+
       productSummaries.push({
         id: existingProduct.id,
         title: existingProduct.title,
