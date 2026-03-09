@@ -10,6 +10,7 @@ import {
   createProductsWorkflow,
   createSalesChannelsWorkflow,
   createShippingProfilesWorkflow,
+  linkSalesChannelsToStockLocationWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
 } from "@medusajs/medusa/core-flows";
 import {
@@ -282,6 +283,9 @@ export async function buildSiteManifest(
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
   const fulfillmentModuleService = container.resolve(Modules.FULFILLMENT);
+  const storeModuleService = container.resolve(Modules.STORE) as {
+    listStores: () => Promise<Array<{ default_location_id?: string | null }>>;
+  };
   const salesChannelModuleService = container.resolve(
     Modules.SALES_CHANNEL
   ) as SalesChannelModuleService;
@@ -332,6 +336,13 @@ export async function buildSiteManifest(
   if (!salesChannel) {
     throw new Error("Failed to resolve sales channel.");
   }
+
+  await ensureSalesChannelStockLocationLink(
+    container,
+    query,
+    storeModuleService,
+    salesChannel.id
+  );
 
   let publishableApiKey: SiteBuilderManifest["publishable_api_key"] = null;
 
@@ -1547,6 +1558,48 @@ async function resolveShippingProfileId(
   });
 
   return result[0].id;
+}
+
+async function ensureSalesChannelStockLocationLink(
+  container: MedusaContainer,
+  query: {
+    graph: (input: {
+      entity: string;
+      fields: string[];
+      filters?: Record<string, unknown>;
+    }) => Promise<{ data: Array<Record<string, unknown>> }>;
+  },
+  storeModuleService: {
+    listStores: () => Promise<Array<{ default_location_id?: string | null }>>;
+  },
+  salesChannelId: string
+): Promise<void> {
+  const [store] = await storeModuleService.listStores();
+  const stockLocationId = store?.default_location_id ?? null;
+
+  if (!stockLocationId) {
+    return;
+  }
+
+  const { data: existingLinks } = await query.graph({
+    entity: "sales_channel_locations",
+    fields: ["sales_channel_id", "stock_location_id"],
+    filters: {
+      sales_channel_id: salesChannelId,
+      stock_location_id: stockLocationId,
+    },
+  });
+
+  if (existingLinks.length) {
+    return;
+  }
+
+  await linkSalesChannelsToStockLocationWorkflow(container).run({
+    input: {
+      id: stockLocationId,
+      add: [salesChannelId],
+    },
+  });
 }
 
 async function ensureCategories(

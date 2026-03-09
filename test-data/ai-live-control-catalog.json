@@ -1,0 +1,501 @@
+{
+  "site": {
+    "name": "AI Live Control",
+    "slug": "ai-live-control",
+    "domain": "live-control.example.com",
+    "design_brief": "Minimal launch-ready AI storefront with a fuller QA catalog."
+  },
+  "categories": [
+    {
+      "name": "Apparel",
+      "handle": "apparel"
+    },
+    {
+      "name": "Tops",
+      "handle": "tops",
+      "parent": "apparel"
+    },
+    {
+      "name": "Bottoms",
+      "handle": "bottoms",
+      "parent": "apparel"
+    },
+    {
+      "name": "Accessories",
+      "handle": "accessories"
+    }
+  ],
+  "products": [
+    {
+      "title": "AI Studio Tee",
+      "handle": "ai-studio-tee",
+      "description": "Core short-sleeve tee for storefront QA coverage across color and size variants.",
+      "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-front.png",
+      "images": [
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-front.png",
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-black-back.png",
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-front.png",
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-back.png"
+      ],
+      "categories": [
+        "Tops"
+      ],
+      "material": "cotton",
+      "origin_country": "gb",
+      "options": [
+        {
+          "title": "Size",
+          "values": [
+            "S",
+            "M",
+            "L"
+          ]
+        },
+        {
+          "title": "Color",
+          "values": [
+            "Black",
+            "White"
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "title": "S / Black",
+          "sku": "AI-STUDIO-TEE-S-BLK",
+          "options": {
+            "Size": "S",
+            "Color": "Black"
+          },
+          "prices": [
+            {
+              "amount": 2400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 2600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "M / Black",
+          "sku": "AI-STUDIO-TEE-M-BLK",
+          "options": {
+            "Size": "M",
+            "Color": "Black"
+          },
+          "prices": [
+            {
+              "amount": 2400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 2600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "L / Black",
+          "sku": "AI-STUDIO-TEE-L-BLK",
+          "options": {
+            "Size": "L",
+            "Color": "Black"
+          },
+          "prices": [
+            {
+              "amount": 2400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 2600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "S / White",
+          "sku": "AI-STUDIO-TEE-S-WHT",
+          "options": {
+            "Size": "S",
+            "Color": "White"
+          },
+          "prices": [
+            {
+              "amount": 2400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 2600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "M / White",
+          "sku": "AI-STUDIO-TEE-M-WHT",
+          "options": {
+            "Size": "M",
+            "Color": "White"
+          },
+          "prices": [
+            {
+              "amount": 2400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 2600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "L / White",
+          "sku": "AI-STUDIO-TEE-L-WHT",
+          "options": {
+            "Size": "L",
+            "Color": "White"
+          },
+          "prices": [
+            {
+              "amount": 2400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 2600,
+              "currency_code": "usd"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "AI Utility Hoodie",
+      "handle": "ai-utility-hoodie",
+      "description": "Midweight hoodie used to verify multi-size apparel, PDP blocks, and checkout totals.",
+      "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png",
+      "images": [
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-front.png",
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatshirt-vintage-back.png"
+      ],
+      "categories": [
+        "Tops"
+      ],
+      "material": "fleece",
+      "origin_country": "pt",
+      "options": [
+        {
+          "title": "Size",
+          "values": [
+            "S",
+            "M",
+            "L",
+            "XL"
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "title": "S",
+          "sku": "AI-UTILITY-HOODIE-S",
+          "options": {
+            "Size": "S"
+          },
+          "prices": [
+            {
+              "amount": 5200,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "M",
+          "sku": "AI-UTILITY-HOODIE-M",
+          "options": {
+            "Size": "M"
+          },
+          "prices": [
+            {
+              "amount": 5200,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "L",
+          "sku": "AI-UTILITY-HOODIE-L",
+          "options": {
+            "Size": "L"
+          },
+          "prices": [
+            {
+              "amount": 5200,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5600,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "XL",
+          "sku": "AI-UTILITY-HOODIE-XL",
+          "options": {
+            "Size": "XL"
+          },
+          "prices": [
+            {
+              "amount": 5200,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5600,
+              "currency_code": "usd"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "AI Transit Joggers",
+      "handle": "ai-transit-joggers",
+      "description": "Everyday joggers to test bottoms category pages and size-only variants.",
+      "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png",
+      "images": [
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-front.png",
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/sweatpants-gray-back.png"
+      ],
+      "categories": [
+        "Bottoms"
+      ],
+      "material": "cotton blend",
+      "origin_country": "pt",
+      "options": [
+        {
+          "title": "Size",
+          "values": [
+            "S",
+            "M",
+            "L",
+            "XL"
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "title": "S",
+          "sku": "AI-TRANSIT-JOGGERS-S",
+          "options": {
+            "Size": "S"
+          },
+          "prices": [
+            {
+              "amount": 4600,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5000,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "M",
+          "sku": "AI-TRANSIT-JOGGERS-M",
+          "options": {
+            "Size": "M"
+          },
+          "prices": [
+            {
+              "amount": 4600,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5000,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "L",
+          "sku": "AI-TRANSIT-JOGGERS-L",
+          "options": {
+            "Size": "L"
+          },
+          "prices": [
+            {
+              "amount": 4600,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5000,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "XL",
+          "sku": "AI-TRANSIT-JOGGERS-XL",
+          "options": {
+            "Size": "XL"
+          },
+          "prices": [
+            {
+              "amount": 4600,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 5000,
+              "currency_code": "usd"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "AI Travel Shorts",
+      "handle": "ai-travel-shorts",
+      "description": "Lightweight shorts for warm-weather catalog coverage and accessory cross-sell testing.",
+      "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png",
+      "images": [
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png",
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-back.png"
+      ],
+      "categories": [
+        "Bottoms"
+      ],
+      "material": "cotton twill",
+      "origin_country": "pt",
+      "options": [
+        {
+          "title": "Size",
+          "values": [
+            "S",
+            "M",
+            "L"
+          ]
+        }
+      ],
+      "variants": [
+        {
+          "title": "S",
+          "sku": "AI-TRAVEL-SHORTS-S",
+          "options": {
+            "Size": "S"
+          },
+          "prices": [
+            {
+              "amount": 3400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 3700,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "M",
+          "sku": "AI-TRAVEL-SHORTS-M",
+          "options": {
+            "Size": "M"
+          },
+          "prices": [
+            {
+              "amount": 3400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 3700,
+              "currency_code": "usd"
+            }
+          ]
+        },
+        {
+          "title": "L",
+          "sku": "AI-TRAVEL-SHORTS-L",
+          "options": {
+            "Size": "L"
+          },
+          "prices": [
+            {
+              "amount": 3400,
+              "currency_code": "eur"
+            },
+            {
+              "amount": 3700,
+              "currency_code": "usd"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "AI Crossbody Pack",
+      "handle": "ai-crossbody-pack",
+      "description": "Single-variant bag to verify simple purchase flows without option selection.",
+      "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png",
+      "images": [
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/shorts-vintage-front.png"
+      ],
+      "categories": [
+        "Accessories"
+      ],
+      "material": "nylon",
+      "origin_country": "cn",
+      "prices": [
+        {
+          "amount": 3900,
+          "currency_code": "eur"
+        },
+        {
+          "amount": 4200,
+          "currency_code": "usd"
+        }
+      ]
+    },
+    {
+      "title": "AI Stainless Bottle",
+      "handle": "ai-stainless-bottle",
+      "description": "Accessory item used to verify low-price products, simple SKUs, and cart totals.",
+      "thumbnail": "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-front.png",
+      "images": [
+        "https://medusa-public-images.s3.eu-west-1.amazonaws.com/tee-white-front.png"
+      ],
+      "categories": [
+        "Accessories"
+      ],
+      "material": "stainless steel",
+      "origin_country": "cn",
+      "prices": [
+        {
+          "amount": 1800,
+          "currency_code": "eur"
+        },
+        {
+          "amount": 2000,
+          "currency_code": "usd"
+        }
+      ]
+    }
+  ],
+  "defaults": {
+    "currency_code": "eur",
+    "status": "published"
+  },
+  "options": {
+    "reuse_sales_channel": true,
+    "skip_existing_products": true,
+    "create_publishable_key": true
+  }
+}
