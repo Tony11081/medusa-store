@@ -94,6 +94,11 @@ function buildLaunchPatch(
   input: SiteControlPlanePatchInput | undefined
 ): SiteControlPlanePatchInput | null {
   const patch = clonePatch(input);
+  const requestedDomain = patch?.site?.domain;
+  const effectiveDomain =
+    requestedDomain === undefined ? site.site.domain : requestedDomain;
+  const domainChanged =
+    requestedDomain !== undefined && requestedDomain !== site.site.domain;
 
   if (!patch) {
     return site.site.domain
@@ -109,16 +114,26 @@ function buildLaunchPatch(
       : null;
   }
 
-  if (site.site.domain) {
+  if (effectiveDomain) {
     patch.platform ??= {};
     patch.platform.domain ??= {};
-    patch.platform.domain.hostname ??= site.site.domain;
-    patch.platform.domain.dns_status ??=
-      site.platform.domain.dns_status ??
-      (site.platform.domain.hostname || site.site.domain ? "pending" : undefined);
-    patch.platform.domain.ssl_status ??=
-      site.platform.domain.ssl_status ??
-      (site.platform.domain.hostname || site.site.domain ? "pending" : undefined);
+    patch.platform.domain.hostname ??= effectiveDomain;
+
+    if (domainChanged) {
+      patch.platform.domain.dns_status ??= "pending";
+      patch.platform.domain.ssl_status ??= "pending";
+    } else {
+      patch.platform.domain.dns_status ??=
+        site.platform.domain.dns_status ??
+        (site.platform.domain.hostname || site.site.domain
+          ? "pending"
+          : undefined);
+      patch.platform.domain.ssl_status ??=
+        site.platform.domain.ssl_status ??
+        (site.platform.domain.hostname || site.site.domain
+          ? "pending"
+          : undefined);
+    }
   }
 
   return patch;

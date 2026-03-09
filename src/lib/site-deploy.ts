@@ -59,7 +59,15 @@ export async function deploySiteToProvider(
     throw new Error("Missing Dokploy API key.");
   }
 
-  if (!input.target.application_id && (!projectId || !environmentId)) {
+  const persistedApplicationId =
+    site.platform.deployment.provider === "dokploy"
+      ? site.platform.deployment.project_id
+      : null;
+  const persistedAppName = asString(site.platform.deployment.metadata?.app_name);
+  const resolvedApplicationId =
+    input.target.application_id ?? persistedApplicationId ?? null;
+
+  if (!resolvedApplicationId && (!projectId || !environmentId)) {
     throw new Error(
       "Missing Dokploy project/environment identifiers for application creation."
     );
@@ -67,15 +75,16 @@ export async function deploySiteToProvider(
 
   const appName =
     input.target.app_name ??
+    persistedAppName ??
     slugify(`${site.site.slug}-${input.target.repository}`);
   const appLabel = input.target.name ?? `${site.site.name} Storefront`;
   const appDescription =
     input.target.description ??
     `Storefront deployment for ${site.site.name} (${site.site.slug})`;
 
-  const createOrUpdateResult = input.target.application_id
+  const createOrUpdateResult = resolvedApplicationId
     ? {
-        applicationId: input.target.application_id,
+        applicationId: resolvedApplicationId,
         appName,
       }
     : await createDokployApplication({
@@ -273,4 +282,8 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/-{2,}/g, "-");
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
 }
