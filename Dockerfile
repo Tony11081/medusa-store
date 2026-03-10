@@ -6,6 +6,8 @@ ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com \
     NPM_CONFIG_AUDIT=false \
     NPM_CONFIG_FUND=false \
     NPM_CONFIG_PROGRESS=false \
+    ADMIN_AUTH_TYPE=jwt \
+    ADMIN_JWT_TOKEN_STORAGE_KEY=medusa_auth_token \
     MEDUSA_DISABLE_ADMIN=false \
     PORT=9000
 
