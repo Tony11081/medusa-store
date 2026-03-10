@@ -15,7 +15,10 @@ COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --fund=false --progress=false
 
 COPY . .
-RUN npm run build
+RUN npm run build \
+    && mkdir -p public \
+    && rm -rf public/admin \
+    && cp -R .medusa/server/public/admin public/admin
 
 COPY docker-start.sh /usr/local/bin/docker-start.sh
 RUN chmod +x /usr/local/bin/docker-start.sh
