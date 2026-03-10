@@ -7,11 +7,16 @@ import {
   siteQuickstartInputSchema,
 } from "../lib/site-builder-schema";
 
+const siteBuilderBodyParser = {
+  sizeLimit: "10mb",
+} as const;
+
 export default defineMiddlewares({
   routes: [
     {
       matcher: "/admin/site-builder",
       methods: ["POST"],
+      bodyParser: siteBuilderBodyParser,
       middlewares: [validateAndTransformBody(siteBuilderInputSchema)],
     },
     {
@@ -32,6 +37,7 @@ export default defineMiddlewares({
     {
       matcher: "/admin/site-builder/quickstart",
       methods: ["POST"],
+      bodyParser: siteBuilderBodyParser,
       middlewares: [validateAndTransformBody(siteQuickstartInputSchema)],
     },
   ],
