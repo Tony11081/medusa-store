@@ -109,11 +109,22 @@ export async function deploySiteToProvider(
         },
       });
 
-  if (Object.keys(input.target.env).length) {
-    await requestDokploy(dokployBaseUrl, dokployApiKey, "POST", "/api/application.update", {
-      applicationId: createOrUpdateResult.applicationId,
-      env: serializeEnv(input.target.env),
-    });
+  const buildEnv = getBuildEnv(site, input.target.env, input.target.url);
+
+  if (Object.keys(input.target.env).length || Object.keys(buildEnv).length) {
+    await requestDokploy(
+      dokployBaseUrl,
+      dokployApiKey,
+      "POST",
+      "/api/application.saveEnvironment",
+      {
+        applicationId: createOrUpdateResult.applicationId,
+        env: serializeEnv(input.target.env),
+        buildArgs: serializeEnv(buildEnv),
+        buildSecrets: "",
+        createEnvFile: true,
+      }
+    );
   }
 
   if (input.target.auto_deploy) {
@@ -250,6 +261,24 @@ function serializeEnv(values: Record<string, string>): string {
     .join("\n");
 }
 
+function getBuildEnv(
+  site: NonNullable<Awaited<ReturnType<typeof retrieveSiteManifest>>>,
+  env: Record<string, string>,
+  deploymentUrl?: string
+): Record<string, string> {
+  const buildEnv = {
+    ...env,
+  };
+  const publicUrl =
+    normalizePublicUrl(site.site.domain) ?? normalizePublicUrl(deploymentUrl);
+
+  if (publicUrl && !buildEnv.NEXT_PUBLIC_BASE_URL) {
+    buildEnv.NEXT_PUBLIC_BASE_URL = publicUrl;
+  }
+
+  return buildEnv;
+}
+
 function deriveApplicationUrl(application: DokployAppResponse): string | null {
   const host = application.domains?.[0]?.host;
 
@@ -286,4 +315,20 @@ function slugify(value: string): string {
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
+}
+
+function normalizePublicUrl(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://")
+    ? trimmed
+    : `https://${trimmed}`;
 }

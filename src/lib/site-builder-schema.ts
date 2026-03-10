@@ -311,7 +311,7 @@ export const siteDeployInputSchema = z
         branch: z.string().trim().min(1).default("main"),
         build_type: z.enum(["dockerfile", "nixpacks"]).default("dockerfile"),
         dockerfile: z.string().trim().min(1).optional(),
-        preview_port: z.number().int().positive().default(3000),
+        preview_port: z.number().int().positive().default(8000),
         env: z.record(z.string()).default({}),
         url: z.string().url().optional(),
         auto_deploy: z.boolean().default(true),
@@ -526,7 +526,7 @@ export const siteDeployExampleInput: SiteDeployInput = {
     branch: "main",
     build_type: "dockerfile",
     dockerfile: "Dockerfile",
-    preview_port: 3000,
+    preview_port: 8000,
     auto_deploy: true,
     env: {
       MEDUSA_BACKEND_URL:

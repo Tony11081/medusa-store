@@ -143,6 +143,8 @@ function mergeDeployEnv(
   site: SiteBuilderManifest,
   deploy: SiteDeployInput
 ): SiteDeployInput {
+  const normalizedSiteDomain = normalizePublicUrl(site.site.domain);
+
   return {
     ...deploy,
     target: {
@@ -158,10 +160,31 @@ function mergeDeployEnv(
               NEXT_PUBLIC_SITE_DOMAIN: site.site.domain,
             }
           : {}),
+        ...(normalizedSiteDomain
+          ? {
+              NEXT_PUBLIC_BASE_URL: normalizedSiteDomain,
+            }
+          : {}),
         ...deploy.target.env,
       },
     },
   };
+}
+
+function normalizePublicUrl(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://")
+    ? trimmed
+    : `https://${trimmed}`;
 }
 
 function clonePatch(
