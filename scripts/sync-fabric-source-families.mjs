@@ -40,11 +40,14 @@ function parseArgs(argv) {
     backend: process.env.MEDUSA_BACKEND_URL || "",
     email: process.env.MEDUSA_ADMIN_EMAIL || "",
     password: process.env.MEDUSA_ADMIN_PASSWORD || "",
+    token: process.env.MEDUSA_ADMIN_TOKEN || "",
     catalog:
       process.env.FABRIC_CATALOG_PATH ||
       "/Users/chengyadong/Documents/布料/wouwww-products.json",
     sourceOrigin: "https://wouwww.com",
     maxLabels: 6,
+    concurrency: 6,
+    timeoutMs: 15000,
     limit: 0,
     report: "",
   }
@@ -70,6 +73,11 @@ function parseArgs(argv) {
       index += 1
       continue
     }
+    if (arg === "--token") {
+      config.token = argv[index + 1] || config.token
+      index += 1
+      continue
+    }
     if (arg === "--catalog") {
       config.catalog = argv[index + 1] || config.catalog
       index += 1
@@ -82,6 +90,16 @@ function parseArgs(argv) {
     }
     if (arg === "--max-labels") {
       config.maxLabels = Number.parseInt(argv[index + 1] || "", 10) || config.maxLabels
+      index += 1
+      continue
+    }
+    if (arg === "--concurrency") {
+      config.concurrency = Number.parseInt(argv[index + 1] || "", 10) || config.concurrency
+      index += 1
+      continue
+    }
+    if (arg === "--timeout-ms") {
+      config.timeoutMs = Number.parseInt(argv[index + 1] || "", 10) || config.timeoutMs
       index += 1
       continue
     }
@@ -218,8 +236,11 @@ function normalizeSourceContent(input) {
   return createHash("md5").update(normalized).digest("hex")
 }
 
-async function requestJson(url, options = {}) {
-  const response = await fetch(url, options)
+async function requestJson(url, options = {}, timeoutMs = 15000) {
+  const response = await fetch(url, {
+    ...options,
+    signal: AbortSignal.timeout(timeoutMs),
+  })
   const text = await response.text()
 
   let body = null
@@ -237,6 +258,10 @@ async function requestJson(url, options = {}) {
 }
 
 async function getToken(config) {
+  if (config.token) {
+    return config.token
+  }
+
   const payload = await requestJson(`${config.backend.replace(/\/$/, "")}/auth/user/emailpass`, {
     method: "POST",
     headers: {
@@ -246,7 +271,7 @@ async function getToken(config) {
       email: config.email,
       password: config.password,
     }),
-  })
+  }, config.timeoutMs)
 
   return payload.token
 }
@@ -269,7 +294,8 @@ async function listProducts(config, token) {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
+      config.timeoutMs
     )
 
     products.push(...(payload.products || []))
@@ -295,7 +321,7 @@ async function createColorOption(config, token, productId, values) {
       title: "Color",
       values,
     }),
-  })
+  }, config.timeoutMs)
 }
 
 async function updateVariant(config, token, productId, variantId, body) {
@@ -306,7 +332,7 @@ async function updateVariant(config, token, productId, variantId, body) {
       "content-type": "application/json",
     },
     body: JSON.stringify(body),
-  })
+  }, config.timeoutMs)
 }
 
 async function batchCreateVariants(config, token, productId, create) {
@@ -319,69 +345,87 @@ async function batchCreateVariants(config, token, productId, create) {
     body: JSON.stringify({
       create,
     }),
-  })
+  }, config.timeoutMs)
+}
+
+async function resolveOneSourceMetadata(config, item) {
+  const searchUrl = new URL("/wp-json/wp/v2/search", config.sourceOrigin)
+  searchUrl.searchParams.set("search", item.sourceHandle.toUpperCase())
+  searchUrl.searchParams.set("subtype", "product")
+
+  let searchResults = []
+  try {
+    searchResults = await requestJson(searchUrl.toString(), {}, config.timeoutMs)
+  } catch (error) {
+    return {
+      handle: item.sourceHandle,
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+
+  const match =
+    searchResults.find((entry) =>
+      String(entry.title || "").toLowerCase().includes(item.sourceHandle.toLowerCase())
+    ) || searchResults[0]
+
+  if (!match) {
+    return {
+      handle: item.sourceHandle,
+      notFound: true,
+    }
+  }
+
+  const productHref = match._links?.self?.[0]?.href
+  let sourceContent = ""
+  let sourceTitle = String(match.title || "")
+
+  if (productHref) {
+    try {
+      const productPayload = await requestJson(productHref, {}, config.timeoutMs)
+      sourceTitle = stripHtml(productPayload.title?.rendered || sourceTitle)
+      sourceContent = productPayload.content?.rendered || ""
+    } catch (error) {
+      return {
+        handle: item.sourceHandle,
+        title: sourceTitle,
+        url: match.url,
+        error: error instanceof Error ? error.message : String(error),
+      }
+    }
+  }
+
+  return {
+    handle: item.sourceHandle,
+    title: sourceTitle,
+    url: match.url,
+    contentHash: normalizeSourceContent(sourceContent),
+  }
 }
 
 async function resolveSourceMetadata(config, items) {
   const metadataByHandle = new Map()
+  const uniqueItems = [...new Map(items.map((item) => [item.sourceHandle, item])).values()]
+  let nextIndex = 0
+  let completed = 0
 
-  for (const item of items) {
-    const searchUrl = new URL("/wp-json/wp/v2/search", config.sourceOrigin)
-    searchUrl.searchParams.set("search", item.sourceHandle.toUpperCase())
-    searchUrl.searchParams.set("subtype", "product")
+  const workers = Array.from({ length: Math.max(1, config.concurrency) }, async () => {
+    while (nextIndex < uniqueItems.length) {
+      const currentIndex = nextIndex
+      nextIndex += 1
+      const item = uniqueItems[currentIndex]
+      const metadata = await resolveOneSourceMetadata(config, item)
+      metadataByHandle.set(item.sourceHandle, metadata)
+      completed += 1
 
-    let searchResults = []
-    try {
-      searchResults = await requestJson(searchUrl.toString())
-    } catch (error) {
-      metadataByHandle.set(item.sourceHandle, {
-        handle: item.sourceHandle,
-        error: error instanceof Error ? error.message : String(error),
-      })
-      continue
-    }
-
-    const match =
-      searchResults.find((entry) =>
-        String(entry.title || "").toLowerCase().includes(item.sourceHandle.toLowerCase())
-      ) || searchResults[0]
-
-    if (!match) {
-      metadataByHandle.set(item.sourceHandle, {
-        handle: item.sourceHandle,
-        notFound: true,
-      })
-      continue
-    }
-
-    const productHref = match._links?.self?.[0]?.href
-    let sourceContent = ""
-    let sourceTitle = String(match.title || "")
-
-    if (productHref) {
-      try {
-        const productPayload = await requestJson(productHref)
-        sourceTitle = stripHtml(productPayload.title?.rendered || sourceTitle)
-        sourceContent = productPayload.content?.rendered || ""
-      } catch (error) {
-        metadataByHandle.set(item.sourceHandle, {
-          handle: item.sourceHandle,
-          title: sourceTitle,
-          url: match.url,
-          error: error instanceof Error ? error.message : String(error),
-        })
-        continue
+      if (completed % 20 === 0 || completed === uniqueItems.length) {
+        console.error(
+          `[source-families] resolved ${completed}/${uniqueItems.length} source handles`
+        )
       }
     }
+  })
 
-    metadataByHandle.set(item.sourceHandle, {
-      handle: item.sourceHandle,
-      title: sourceTitle,
-      url: match.url,
-      contentHash: normalizeSourceContent(sourceContent),
-    })
-  }
-
+  await Promise.all(workers)
   return metadataByHandle
 }
 
@@ -390,11 +434,14 @@ function buildFamilyLabels(items, metadataByHandle, maxLabels) {
 
   for (const item of items) {
     const metadata = metadataByHandle.get(item.sourceHandle)
-    if (!metadata?.contentHash) {
+    const familyFingerprint =
+      normalizeSourceContent(item.description || "") || metadata?.contentHash || null
+
+    if (!familyFingerprint) {
       continue
     }
 
-    const key = `${item.brandSlug}::${item.categorySlug}::${metadata.contentHash}`
+    const key = `${item.brandSlug}::${item.categorySlug}::${familyFingerprint}`
     const group = groupedHandles.get(key) || []
     group.push(item)
     groupedHandles.set(key, group)
@@ -425,7 +472,7 @@ function buildFamilyLabels(items, metadataByHandle, maxLabels) {
 async function main() {
   const config = parseArgs(process.argv.slice(2))
 
-  if (!config.backend || !config.email || !config.password || !config.catalog) {
+  if (!config.backend || (!config.token && (!config.email || !config.password)) || !config.catalog) {
     usage()
     process.exit(1)
   }
