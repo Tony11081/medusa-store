@@ -6,6 +6,7 @@ import {
   siteControlPlanePatchExampleInput,
   siteDeployExampleInput,
   siteLaunchExampleInput,
+  siteQuickstartExampleInput,
 } from "../../../lib/site-builder-schema";
 
 export async function GET(
@@ -39,6 +40,9 @@ export async function GET(
       platform_route: baseUrl
         ? `${baseUrl}/admin/site-builder/platform`
         : null,
+      quickstart_route: baseUrl
+        ? `${baseUrl}/admin/site-builder/quickstart`
+        : null,
       site_detail_route_template: baseUrl
         ? `${baseUrl}/admin/site-builder/sites/:siteRef`
         : null,
@@ -53,6 +57,7 @@ export async function GET(
         "create publishable API keys",
         "create-or-reuse product categories",
         "create-or-reuse products",
+        "synthesize a site manifest from brand name, website intro, and product document",
         "persist site control-plane metadata",
         "list managed sites",
         "retrieve a managed site by slug, domain, or sales channel id",
@@ -72,6 +77,7 @@ export async function GET(
     patch_example_input: siteControlPlanePatchExampleInput,
     deploy_example_input: siteDeployExampleInput,
     launch_example_input: siteLaunchExampleInput,
+    quickstart_example_input: siteQuickstartExampleInput,
   });
 }
 

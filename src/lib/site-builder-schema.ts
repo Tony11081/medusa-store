@@ -236,6 +236,27 @@ const siteSchema = z
   })
   .strict();
 
+const siteQuickstartDocumentSchema = z
+  .object({
+    title: z.string().trim().min(1).optional(),
+    format: z.enum(["text", "markdown", "json", "structured"]).optional(),
+    content: z.string().trim().min(1).optional(),
+    categories: z.array(categorySchema).optional(),
+    products: z.array(productSchema).optional(),
+    metadata: z.record(z.unknown()).optional(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (!value.content && !(value.products?.length || value.categories?.length)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Provide product_document.content or structured product_document.products/categories.",
+        path: ["content"],
+      });
+    }
+  });
+
 const defaultsSchema = z
   .object({
     currency_code: z.string().trim().min(3).max(3).default("usd"),
@@ -333,6 +354,31 @@ export const siteLaunchInputSchema = z
   })
   .strict();
 
+export const siteQuickstartInputSchema = z
+  .object({
+    brand_name: z.string().trim().min(1),
+    website_intro: z.string().trim().min(1),
+    domain: z.string().trim().min(1).optional(),
+    product_document: z.union([
+      z.string().trim().min(1),
+      siteQuickstartDocumentSchema,
+    ]),
+    site: z
+      .object({
+        slug: z.string().trim().min(1).optional(),
+        backend_url: z.string().url().optional(),
+        theme: z.record(z.unknown()).optional(),
+        pages: z.array(sitePageSchema).optional(),
+        metadata: z.record(z.unknown()).optional(),
+      })
+      .strict()
+      .optional(),
+    platform: sitePlatformSchema.default({}),
+    defaults: defaultsSchema,
+    options: optionsSchema,
+  })
+  .strict();
+
 export type SiteBuilderInput = z.infer<typeof siteBuilderInputSchema>;
 export type SiteBuilderCategoryInput = z.infer<typeof categorySchema>;
 export type SiteBuilderProductInput = z.infer<typeof productSchema>;
@@ -343,6 +389,7 @@ export type SiteControlPlanePatchInput = z.infer<
 >;
 export type SiteDeployInput = z.infer<typeof siteDeployInputSchema>;
 export type SiteLaunchInput = z.infer<typeof siteLaunchInputSchema>;
+export type SiteQuickstartInput = z.infer<typeof siteQuickstartInputSchema>;
 
 export const siteBuilderExampleInput: SiteBuilderInput = {
   site: {
@@ -506,4 +553,52 @@ export const siteLaunchExampleInput: SiteLaunchInput = {
     },
   },
   deploy: siteDeployExampleInput,
+};
+
+export const siteQuickstartExampleInput: SiteQuickstartInput = {
+  brand_name: "Northstar Goods",
+  website_intro:
+    "Northstar Goods is a premium everyday-carry brand focused on calm editorial storytelling, modular products, and durable materials for city life.",
+  domain: "shop.northstargoods.com",
+  product_document: {
+    title: "Northstar Goods Spring Catalog",
+    format: "markdown",
+    content: `
+## Commuter Tote
+Category: Bags
+Price: USD 149
+Description: Structured daily tote with padded laptop sleeve and weatherproof canvas shell.
+Material: waxed canvas
+Image: https://images.example.com/commuter-tote.jpg
+
+## Travel Flask
+Category: Accessories
+Price: USD 39
+Description: Double-wall stainless flask with matte powder coat and leak-proof cap.
+Material: stainless steel
+Image: https://images.example.com/travel-flask.jpg
+    `.trim(),
+  },
+  platform: {
+    domain: {
+      hostname: "shop.northstargoods.com",
+      provider: "cloudflare",
+      dns_status: "pending",
+      ssl_status: "pending",
+    },
+    deployment: {
+      provider: "dokploy",
+      environment: "production",
+      status: "queued",
+    },
+  },
+  defaults: {
+    currency_code: "usd",
+    status: ProductStatus.PUBLISHED,
+  },
+  options: {
+    reuse_sales_channel: true,
+    skip_existing_products: true,
+    create_publishable_key: true,
+  },
 };

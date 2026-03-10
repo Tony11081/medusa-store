@@ -16,6 +16,7 @@
     "build": "medusa build",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "site:build": "medusa exec ./src/scripts/site-builder.ts",
+    "site:quickstart": "medusa exec ./src/scripts/site-quickstart.ts",
     "api-key:create": "medusa exec ./src/scripts/create-api-key.ts",
     "stripe:enable": "medusa exec ./src/scripts/enable-stripe.ts",
     "start": "medusa start",

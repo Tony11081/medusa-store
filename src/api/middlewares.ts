@@ -4,6 +4,7 @@ import {
   siteControlPlanePatchSchema,
   siteDeployInputSchema,
   siteLaunchInputSchema,
+  siteQuickstartInputSchema,
 } from "../lib/site-builder-schema";
 
 export default defineMiddlewares({
@@ -27,6 +28,11 @@ export default defineMiddlewares({
       matcher: "/admin/site-builder/sites/:siteRef/launch",
       methods: ["POST"],
       middlewares: [validateAndTransformBody(siteLaunchInputSchema)],
+    },
+    {
+      matcher: "/admin/site-builder/quickstart",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(siteQuickstartInputSchema)],
     },
   ],
 });

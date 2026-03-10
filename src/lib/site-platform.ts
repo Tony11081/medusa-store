@@ -10,6 +10,7 @@ export type SitePlatformCapabilities = {
   admin_api: {
     base_url: string | null;
     site_builder_route: string | null;
+    quickstart_route: string | null;
     site_list_route: string | null;
     platform_route: string | null;
     authentication: "Authorization: Basic <secret-api-key>";
@@ -101,6 +102,9 @@ export async function getSitePlatformCapabilities(
     admin_api: {
       base_url: baseUrl,
       site_builder_route: baseUrl ? `${baseUrl}/admin/site-builder` : null,
+      quickstart_route: baseUrl
+        ? `${baseUrl}/admin/site-builder/quickstart`
+        : null,
       site_list_route: baseUrl ? `${baseUrl}/admin/site-builder/sites` : null,
       platform_route: baseUrl
         ? `${baseUrl}/admin/site-builder/platform`
@@ -135,7 +139,7 @@ export async function getSitePlatformCapabilities(
       },
       site_control_plane: {
         status: "ready",
-        notes: "Managed site manifests, launch readiness, and per-site operational state are now exposed over admin APIs.",
+        notes: "Managed site manifests, quickstart intake, launch readiness, and per-site operational state are now exposed over admin APIs.",
       },
       theme_generation: {
         status: "external",
