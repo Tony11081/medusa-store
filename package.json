@@ -21,6 +21,7 @@
     "fabric:source-families": "node ./scripts/sync-fabric-source-families.mjs",
     "shopify:split-skus:ai": "node ./scripts/ai-split-shopify-skus.mjs",
     "shopify:split-skus:apply": "node ./scripts/apply-ai-split-report-to-medusa.mjs",
+    "medusa:normalize-skus": "node ./scripts/normalize-medusa-skus.mjs",
     "api-key:create": "medusa exec ./src/scripts/create-api-key.ts",
     "stripe:enable": "medusa exec ./src/scripts/enable-stripe.ts",
     "start": "medusa start",
