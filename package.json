@@ -20,6 +20,7 @@
     "fabric:variants": "node ./scripts/sync-fabric-color-variants.mjs",
     "fabric:source-families": "node ./scripts/sync-fabric-source-families.mjs",
     "fabric:normalize-copy": "node ./scripts/normalize-fabric-copy.mjs",
+    "fabric:normalize-variant-axes": "node ./scripts/normalize-fabric-variant-axes.mjs",
     "shopify:split-skus:ai": "node ./scripts/ai-split-shopify-skus.mjs",
     "shopify:split-skus:apply": "node ./scripts/apply-ai-split-report-to-medusa.mjs",
     "medusa:normalize-skus": "node ./scripts/normalize-medusa-skus.mjs",

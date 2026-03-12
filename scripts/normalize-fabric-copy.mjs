@@ -382,6 +382,11 @@ function extractColorValues(product) {
 }
 
 function extractPrimaryColor({ sourceTitle, product, metadata }) {
+  const titleMatch = sourceTitle.match(colorRegex())
+  if (titleMatch?.[0]) {
+    return smartTitleCase(titleMatch[0])
+  }
+
   const metadataTags = Array.isArray(metadata?.tags) ? metadata.tags : []
   const colorTag = metadataTags.find((tag) =>
     /^color-/iu.test(String(tag || ""))
@@ -390,11 +395,6 @@ function extractPrimaryColor({ sourceTitle, product, metadata }) {
   if (colorTag) {
     const normalized = String(colorTag).replace(/^color-/iu, "").replace(/-/g, " ")
     return smartTitleCase(normalized)
-  }
-
-  const titleMatch = sourceTitle.match(colorRegex())
-  if (titleMatch?.[0]) {
-    return smartTitleCase(titleMatch[0])
   }
 
   const colorValues = extractColorValues(product)
@@ -479,6 +479,7 @@ function normalizeTitlePatterns(title) {
     .replace(/\bbig patterns?\b/giu, " Large Pattern ")
     .replace(/\bbig patterned\b/giu, " Large Pattern ")
     .replace(/\bwith mini patterns?\b/giu, " Mini Pattern ")
+    .replace(/\bmini patterned\b/giu, " Mini Pattern ")
     .replace(/\bwith tiny letters\b/giu, " Tiny Letters ")
     .replace(/\bwith velvet patterns?\b/giu, " Velvet Pattern ")
     .replace(/\bwith velvet letters\b/giu, " Velvet Letters ")
@@ -556,6 +557,7 @@ function extractSafeDescriptors(title, material) {
   push(/\breflective\b/u, "Reflective")
   push(/\blarge pattern\b|\bbig patterns?\b|\bbigger patterns?\b/u, "Large Pattern")
   push(/\bmini pattern(?:s)?\b/u, "Mini Pattern")
+  push(/\bfornasetti\b/u, "Fornasetti")
   push(/\btiny letters\b/u, "Tiny Letters")
   push(/\bvelvet pattern(?:s)?\b/u, "Velvet Pattern")
   push(/\bvelvet letters?\b/u, "Velvet Letters")
@@ -591,16 +593,13 @@ function extractSafeDescriptors(title, material) {
 function buildTitle({ item, product, material }) {
   const brand = BRAND_NAMES[item.brandSlug] || smartTitleCase(item.brandSlug)
   const sourceTitle = stripUseCaseTail(normalizeSourceTitle(item.title))
-  const multiColor = extractColorValues(product).length > 1
   const suffix = MATERIAL_TITLE_SUFFIX[material] || MATERIAL_TITLE_SUFFIX["Designer Textile"]
   const titleForParsing = normalizeTitlePatterns(reorderBrandToFront(sourceTitle, brand))
-  const primaryColor = multiColor
-    ? null
-    : extractPrimaryColor({
-        sourceTitle: titleForParsing,
-        product,
-        metadata: product.metadata,
-      })
+  const primaryColor = extractPrimaryColor({
+    sourceTitle: titleForParsing,
+    product,
+    metadata: product.metadata,
+  })
   const descriptors = extractSafeDescriptors(titleForParsing, material)
   const parts = [brand]
 
@@ -905,7 +904,7 @@ function buildCopyPayload(item, product) {
     material,
     metadata: {
       ...(product.metadata || {}),
-      copy_standard_version: "fabric-copy-2026-03-v1",
+      copy_standard_version: "fabric-copy-2026-03-v2",
       source_title_original: item.title,
       source_description_original: sourceDescription,
       width_label: width,
